@@ -5,6 +5,9 @@ from azure.cognitiveservices.vision.computervision.models import TextOperationSt
 from azure.cognitiveservices.vision.computervision.models import TextRecognitionMode
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
+import google
+import webbrowser
+import csv
 
 import azure.cognitiveservices.speech as speechsdk
 
@@ -14,13 +17,17 @@ import azure.cognitiveservices.speech as speechsdk
 credentials = CognitiveServicesCredentials('d539943fc0e149c4a6aa5c88a311c345')
 computervision_client = ComputerVisionClient('https://computervisionhackcambridge.cognitiveservices.azure.com/', credentials)
 
-speech_key, service_region = "7312537c21c24fcb9f0873bef0f17bac", "uksouth"
-speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
+#caption_obj_detected = " "
+obj_detected = []
+#obj_output = []
+ingredients_list = ["noodles", "sweet potato","corn", "bean","salmon","drumstick","turkey", "hummus", "jam","butter", "banana", "apple", "garlic","leaf vegetable", "rice", "egg", "tomato","chicken","meat","beef","pork","ham","potato","spinach","mushroom","radish","milk","cheese","fish","cream","yoghurt"]
 
-# Creates a speech synthesizer using the default speaker as audio output.
-speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+"""ingredients_list = []
+with open('ingredients.csv','rt')as f:
+    data = csv.reader(f)
+    for row in data:
+        ingredients_list.append(row) """
 
-caption_obj_detected = " "
 
 app = Flask(__name__)
 
@@ -40,41 +47,65 @@ def check_results():
     image = io.BytesIO(image_bytes)
 
     # Send the image to the Computer Vision service
-    description_results = computervision_client.describe_image_in_stream(image)
+    #tag_results = computervision_client.tag_image_in_stream(image)
+    tag_results = computervision_client.tag_image('http://www.dailyadvent.com/wp-content/uploads/2018/12/Chicken.jpg')
 
     # Get the captions (descriptions) from the response, with confidence level
-    description = 'Description of remote image: '
-    if (len(description_results.captions) == 0):
-        description = description + 'No description detected.'
+    description = 'Tags in remote image: '
+    if (len(tag_results.tags) == 0):
+        print('No tag detected.')
     else:
-        for caption in description_results.captions:
-            if caption.confidence >=0.7:
-                description = description + caption.text
-                caption_obj_detected = description
-                print(description)
+        #f = open("contents.csv", "a")
+        for tag in tag_results.tags:
+            if tag.confidence >=0.5 and tag.name in ingredients_list:
+                obj_detected.append(tag.name)
+                #obj_output.append(tag.name)
+                #f.write(tag.name + "\n")
+                #obj_detected= tag.name
+                print(tag.name, tag.confidence)
+            #print("'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100))
+
+        try: 
+            from googlesearch import search 
+        except ImportError:  
+            print("No module named 'google' found") 
+  
+        # to search 
+        print(obj_detected)
+
+        obj_list = " ".join(str(e) for e in obj_detected)
+        print(obj_list)
+        query = obj_list + "recipe"
+
+  
+        if query !="recipe":
+            for j in search(query, tld="co.in", num=10, stop=1, pause=2): 
+                website = j
+                print(j)
+                webbrowser.open_new(website)
+
+        """with open('recipes.csv') as csvfile:
+            reader = csv.reader(csvfile)
+            my_list = list(reader)
+            print(my_list)
+            for row in my_list:
+                if row['Ingredients'] in obj_detected and obj_detected != []: 
+                    print(row['Ingredients'])
+                    print(obj_detected)
+                    print(my_list['Name'])
+                else:
+                    break"""
     
-    print("cap:" + caption_obj_detected)
-    #print("cap:" + caption_obj_detected)
-    if (caption_obj_detected)!= " ":
-        text = caption_obj_detected
+    return jsonify({'description' : obj_detected})
 
-        # Synthesizes the received text to speech.
-        # The synthesized speech is expected to be heard on the speaker with this line executed.
-        result = speech_synthesizer.speak_text_async(text).get()
+        
 
-        # Checks result.
-        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-            print("Speech synthesized to speaker for text [{}]".format(text))
-        elif result.reason == speechsdk.ResultReason.Canceled:
-            cancellation_details = result.cancellation_details
-            print("Speech synthesis canceled: {}".format(cancellation_details.reason))
-            if cancellation_details.reason == speechsdk.CancellationReason.Error:
-                if cancellation_details.error_details:
-                    print("Error details: {}".format(cancellation_details.error_details))
-            print("Did you update the subscription info?")    
+
+    #f.close()
+    
 
     # Return a result
-    return jsonify({'description' : description})
+    
 
 """    
 
@@ -87,26 +118,20 @@ def check_results():
 
 
 
-# Receives a text from console input.
-print("Type some text that you want to speak...")
 
 """
-
-tag_results = computervision_client.tag_image_in_stream(image)
+    description_results = computervision_client.describe_image_in_stream(image)
 
     # Get the captions (descriptions) from the response, with confidence level
-    description = 'Tags in remote image: '
-    if (len(tag_results.tags) == 0):
-        print('No tag detected.')
+    description = 'Description of remote image: '
+    if (len(description_results.captions) == 0):
+        description = description + 'No description detected.'
     else:
-        f = open("contents.csv", "a")
-        for tag in tag_results.tags:
-            objectdetected = tag.name
-            f.write(tag.name + "\n")
-            print(tag.name, tag.confidence)
-            #print("'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100))
-    f.close()
+        for caption in description_results.captions:
+            if caption.confidence >=0.7:
+                description = description + caption.text
+                caption_obj_detected = description
+                print(description)
 
 """
-
     
