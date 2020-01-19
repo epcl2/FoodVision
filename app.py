@@ -9,17 +9,10 @@ from msrest.authentication import CognitiveServicesCredentials
 import webbrowser
 import csv
 
-#import azure.cognitiveservices.speech as speechsdk
-
-#credentials = CognitiveServicesCredentials(os.environ['computer_vision_key'])
-#computervision_client = ComputerVisionClient(os.environ['computer_vision_endpoint'], credentials)
-
 credentials = CognitiveServicesCredentials('d539943fc0e149c4a6aa5c88a311c345')
 computervision_client = ComputerVisionClient('https://computervisionhackcambridge.cognitiveservices.azure.com/', credentials)
 
-#caption_obj_detected = " "
 obj_detected = []
-#obj_output = []
 ingredients_list = ["pasta","noodles", "sweet potato","corn", "bean","salmon","drumstick","turkey", "hummus", "jam","butter", "banana", "apple", "garlic","leaf vegetable", "rice", "egg", "tomato","chicken","meat","beef","pork","ham","potato","spinach","mushroom","radish","milk","cheese","fish","cream","yoghurt"]
 
 """ingredients_list = []
@@ -48,7 +41,9 @@ def check_results():
 
     # Send the image to the Computer Vision service
     tag_results = computervision_client.tag_image_in_stream(image)
-    tag_results = computervision_client.tag_image('https://st.depositphotos.com/2045405/2014/i/950/depositphotos_20143109-stock-photo-apple-and-banana-on-white.jpg')
+    
+    #Uncomment line below if using url image instead
+    #tag_results = computervision_client.tag_image('https://st.depositphotos.com/2045405/2014/i/950/depositphotos_20143109-stock-photo-apple-and-banana-on-white.jpg')
 
     # Get the captions (descriptions) from the response, with confidence level
     description = 'Tags in remote image: '
@@ -69,69 +64,32 @@ def check_results():
             from googlesearch import search 
         except ImportError:  
             print("No module named 'google' found") 
-  
-        # to search 
-        print(obj_detected)
 
         obj_list = " ".join(str(e) for e in obj_detected)
-        print(obj_list)
+        print("The ingredients you have is " + obj_list)
         query = obj_list + " recipe"
-        print(query)
+        print("Searching for: " + query)
   
         if query !=" recipe":
             for j in search(query, tld="co.in", num=10, stop=1, pause=2): 
                 website = j
                 print(j)
                 webbrowser.open_new(website)
-
-        """with open('recipes.csv') as csvfile:
-            reader = csv.reader(csvfile)
-            my_list = list(reader)
-            print(my_list)
-            for row in my_list:
-                if row['Ingredients'] in obj_detected and obj_detected != []: 
-                    print(row['Ingredients'])
-                    print(obj_detected)
-                    print(my_list['Name'])
-                else:
-                    break"""
     
-    return jsonify({'description' : obj_detected})
-
-        
-
+    return jsonify({'description' : "The ingredient(s) you have is/are: " +obj_list +'\n' +'Searching for: ' +obj_list +" recipe"})
 
     #f.close()
     
 
-    # Return a result
-    
-
-"""    
-
-    ######################################################
-    #                                                   #
-    # Add your code here to use the Computer Vision SDK #
-    #                                                   #
-    #####################################################
-"""
-
-
-
-
-"""
-    description_results = computervision_client.describe_image_in_stream(image)
-
-    # Get the captions (descriptions) from the response, with confidence level
-    description = 'Description of remote image: '
-    if (len(description_results.captions) == 0):
-        description = description + 'No description detected.'
-    else:
-        for caption in description_results.captions:
-            if caption.confidence >=0.7:
-                description = description + caption.text
-                caption_obj_detected = description
-                print(description)
-
-"""
-    
+#for reading recipes that are in a csv file instead of searching the web  
+"""with open('recipes.csv') as csvfile:
+    reader = csv.reader(csvfile)
+    my_list = list(reader)
+    print(my_list)
+    for row in my_list:
+        if row['Ingredients'] in obj_detected and obj_detected != []: 
+            print(row['Ingredients'])
+            print(obj_detected)
+            print(my_list['Name'])
+        else:
+            break"""
