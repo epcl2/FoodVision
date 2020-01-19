@@ -5,11 +5,11 @@ from azure.cognitiveservices.vision.computervision.models import TextOperationSt
 from azure.cognitiveservices.vision.computervision.models import TextRecognitionMode
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
-import google
+# import google
 import webbrowser
 import csv
 
-import azure.cognitiveservices.speech as speechsdk
+#import azure.cognitiveservices.speech as speechsdk
 
 #credentials = CognitiveServicesCredentials(os.environ['computer_vision_key'])
 #computervision_client = ComputerVisionClient(os.environ['computer_vision_endpoint'], credentials)
@@ -20,7 +20,7 @@ computervision_client = ComputerVisionClient('https://computervisionhackcambridg
 #caption_obj_detected = " "
 obj_detected = []
 #obj_output = []
-ingredients_list = ["noodles", "sweet potato","corn", "bean","salmon","drumstick","turkey", "hummus", "jam","butter", "banana", "apple", "garlic","leaf vegetable", "rice", "egg", "tomato","chicken","meat","beef","pork","ham","potato","spinach","mushroom","radish","milk","cheese","fish","cream","yoghurt"]
+ingredients_list = ["pasta","noodles", "sweet potato","corn", "bean","salmon","drumstick","turkey", "hummus", "jam","butter", "banana", "apple", "garlic","leaf vegetable", "rice", "egg", "tomato","chicken","meat","beef","pork","ham","potato","spinach","mushroom","radish","milk","cheese","fish","cream","yoghurt"]
 
 """ingredients_list = []
 with open('ingredients.csv','rt')as f:
@@ -47,8 +47,8 @@ def check_results():
     image = io.BytesIO(image_bytes)
 
     # Send the image to the Computer Vision service
-    #tag_results = computervision_client.tag_image_in_stream(image)
-    tag_results = computervision_client.tag_image('http://www.dailyadvent.com/wp-content/uploads/2018/12/Chicken.jpg')
+    tag_results = computervision_client.tag_image_in_stream(image)
+    tag_results = computervision_client.tag_image('https://st.depositphotos.com/2045405/2014/i/950/depositphotos_20143109-stock-photo-apple-and-banana-on-white.jpg')
 
     # Get the captions (descriptions) from the response, with confidence level
     description = 'Tags in remote image: '
@@ -75,10 +75,10 @@ def check_results():
 
         obj_list = " ".join(str(e) for e in obj_detected)
         print(obj_list)
-        query = obj_list + "recipe"
-
+        query = obj_list + " recipe"
+        print(query)
   
-        if query !="recipe":
+        if query !=" recipe":
             for j in search(query, tld="co.in", num=10, stop=1, pause=2): 
                 website = j
                 print(j)
